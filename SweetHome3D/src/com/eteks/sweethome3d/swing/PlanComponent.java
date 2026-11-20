@@ -1626,13 +1626,15 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     }
     return this.planBoundsCache;
   }
-  
-  /**
-   * Returns the collection of walls, furniture, rooms and dimension lines of the home 
-   * painted by this component wherever the level they belong to is selected or not.
-   */
+
   protected List<Selectable> getPaintedItems() {
-    return this.home.getSelectableViewableItems();
+    List<Selectable> items = new ArrayList<Selectable>();
+    for (Selectable item : this.home.getSelectableViewableItems()) {
+      if (!(item instanceof Elevatable) || isViewableAtSelectedLevel((Elevatable)item)) {
+        items.add(item);
+      }
+    }
+    return items;
   }
   
   /**
@@ -2002,13 +2004,40 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
     }
     return strokeWidth;
   }
-  
+
   /**
-   * Prints this component plan at the scale given in the home print attributes or at a scale 
-   * that makes it fill <code>pageFormat</code> imageable size if this attribute is <code>null</code>.
+   * Prints one level per page, in level order. Each page shows the plan of one viewable level,
+   * and the originally selected level is restored afterwards.
    */
   public int print(Graphics g, PageFormat pageFormat, int pageIndex) {
-    List<Selectable> printedItems = getPaintedItems(); 
+    List<Level> viewableLevels = new ArrayList<Level>();
+    for (Level level : this.home.getLevels()) {
+      if (level.isViewable()) {
+        viewableLevels.add(level);
+      }
+    }
+    if (viewableLevels.size() <= 1) {
+      return printSelectedLevel(g, pageFormat, pageIndex);
+    }
+    if (pageIndex < 0 || pageIndex >= viewableLevels.size()) {
+      return NO_SUCH_PAGE;
+    }
+    Level previousSelectedLevel = this.home.getSelectedLevel();
+    try {
+      this.home.setSelectedLevel(viewableLevels.get(pageIndex));
+      return printSelectedLevel(g, pageFormat, 0);
+    } finally {
+      this.home.setSelectedLevel(previousSelectedLevel);
+    }
+  }
+
+  /**
+   * Prints this component plan at the scale given in the home print attributes or at a scale
+   * that makes it fill <code>pageFormat</code> imageable size if this attribute is <code>null</code>.
+   */
+  private int printSelectedLevel(Graphics g, PageFormat pageFormat, int pageIndex) {
+    this.sortedLevelFurniture = null;
+    List<Selectable> printedItems = getPaintedItems();
     Rectangle2D printedItemBounds = getItemsBounds(g, printedItems);
     if (printedItemBounds != null) {
       double imageableX = pageFormat.getImageableX();
@@ -2047,7 +2076,7 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
         rowIndex = pageIndex / pagesPerRow;
         columnIndex = pageIndex - rowIndex * pagesPerRow;
       }
-          
+
       Graphics2D g2D = (Graphics2D)g.create();
       g2D.clip(new Rectangle2D.Double(imageableX, imageableY, imageableWidth, imageableHeight));
       // Change coordinates system to paper imageable origin
@@ -2057,17 +2086,17 @@ public class PlanComponent extends JComponent implements PlanView, Scrollable, P
       g2D.translate(-printedItemBounds.getMinX() + extraMargin,
           -printedItemBounds.getMinY() + extraMargin);
       // Center plan in component if possible
-      g2D.translate(Math.max(0, 
-              (imageableWidth * pagesPerRow / printScale - printedItemBounds.getWidth() - 2 * extraMargin) / 2), 
-          Math.max(0, 
+      g2D.translate(Math.max(0,
+              (imageableWidth * pagesPerRow / printScale - printedItemBounds.getWidth() - 2 * extraMargin) / 2),
+          Math.max(0,
               (imageableHeight * pagesPerColumn / printScale - printedItemBounds.getHeight() - 2 * extraMargin) / 2));
       setRenderingHints(g2D);
       try {
         // Print component contents
         paintContent(g2D, printScale, PaintMode.PRINT);
       } catch (InterruptedIOException ex) {
-        // Ignore exception because it may happen only in EXPORT paint mode 
-      }   
+        // Ignore exception because it may happen only in EXPORT paint mode
+      }
       g2D.dispose();
       return PAGE_EXISTS;
     } else {
