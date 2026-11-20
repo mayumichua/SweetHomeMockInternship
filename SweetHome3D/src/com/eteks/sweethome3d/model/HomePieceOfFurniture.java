@@ -43,237 +43,251 @@ import java.util.Map;
  */
 public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture, Selectable, Elevatable {
   private static final long serialVersionUID = 1L;
-  
+
   private static final double TWICE_PI = 2 * Math.PI;
-  
+
   /**
-   * The properties of a piece of furniture that may change. <code>PropertyChangeListener</code>s added 
+   * The properties of a piece of furniture that may change. <code>PropertyChangeListener</code>s added
    * to a piece of furniture will be notified under a property name equal to the string value of one these properties.
    */
-  public enum Property {NAME, NAME_VISIBLE, NAME_X_OFFSET, NAME_Y_OFFSET, NAME_STYLE, NAME_ANGLE,
-      DESCRIPTION, PRICE, WIDTH, DEPTH, HEIGHT, COLOR, TEXTURE, MODEL_MATERIALS, SHININESS, VISIBLE, X, Y, ELEVATION, ANGLE, MODEL_MIRRORED, MOVABLE, LEVEL};
-  
-  /** 
-   * The properties on which home furniture may be sorted.  
+  public enum Property {
+    NAME, NAME_VISIBLE, NAME_X_OFFSET, NAME_Y_OFFSET, NAME_STYLE, NAME_ANGLE,
+    DESCRIPTION, PRICE, WIDTH, DEPTH, HEIGHT, COLOR, TEXTURE, MODEL_MATERIALS, SHININESS, VISIBLE, X, Y, ELEVATION, ANGLE, MODEL_MIRRORED, MOVABLE, LEVEL
+  }
+
+  ;
+
+  /**
+   * The properties on which home furniture may be sorted.
    */
-  public enum SortableProperty {CATALOG_ID, NAME, WIDTH, DEPTH, HEIGHT, MOVABLE, 
-                                DOOR_OR_WINDOW, COLOR, TEXTURE, VISIBLE, X, Y, ELEVATION, ANGLE,
-                                PRICE, VALUE_ADDED_TAX, VALUE_ADDED_TAX_PERCENTAGE, PRICE_VALUE_ADDED_TAX_INCLUDED, LEVEL};
+  public enum SortableProperty {
+    CATALOG_ID, NAME, WIDTH, DEPTH, HEIGHT, MOVABLE,
+    DOOR_OR_WINDOW, COLOR, TEXTURE, VISIBLE, X, Y, ELEVATION, ANGLE,
+    PRICE, VALUE_ADDED_TAX, VALUE_ADDED_TAX_PERCENTAGE, PRICE_VALUE_ADDED_TAX_INCLUDED, LEVEL, VOLUME
+  }
+
+  ;
   private static final Map<SortableProperty, Comparator<HomePieceOfFurniture>> SORTABLE_PROPERTY_COMPARATORS;
-  private static final float [][] IDENTITY = new float [][] {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-  
+  private static final float[][] IDENTITY = new float[][]{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+
   static {
     final Collator collator = Collator.getInstance();
     // Init piece property comparators
     SORTABLE_PROPERTY_COMPARATORS = new HashMap<SortableProperty, Comparator<HomePieceOfFurniture>>();
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.CATALOG_ID, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          if (piece1.catalogId == piece2.catalogId) {
-            return 0;
-          } else if (piece1.catalogId == null) {
-            return -1;
-          } else if (piece2.catalogId == null) {
-            return 1; 
-          } else {
-            return collator.compare(piece1.catalogId, piece2.catalogId);
-          }
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        if (piece1.catalogId == piece2.catalogId) {
+          return 0;
+        } else if (piece1.catalogId == null) {
+          return -1;
+        } else if (piece2.catalogId == null) {
+          return 1;
+        } else {
+          return collator.compare(piece1.catalogId, piece2.catalogId);
         }
-      });
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.NAME, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          if (piece1.name == piece2.name) {
-            return 0;
-          } else if (piece1.name == null) {
-            return -1;
-          } else if (piece2.name == null) {
-            return 1; 
-          } else {
-            return collator.compare(piece1.name, piece2.name);
-          }
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        if (piece1.name == piece2.name) {
+          return 0;
+        } else if (piece1.name == null) {
+          return -1;
+        } else if (piece2.name == null) {
+          return 1;
+        } else {
+          return collator.compare(piece1.name, piece2.name);
         }
-      });
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.WIDTH, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.width, piece2.width);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.width, piece2.width);
+      }
+    });
+    SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.VOLUME, new Comparator<HomePieceOfFurniture>() {
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.getVolume(), piece2.getVolume());
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.HEIGHT, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.height, piece2.height);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.height, piece2.height);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.DEPTH, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.depth, piece2.depth);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.depth, piece2.depth);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.MOVABLE, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.movable, piece2.movable);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.movable, piece2.movable);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.DOOR_OR_WINDOW, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.doorOrWindow, piece2.doorOrWindow);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.doorOrWindow, piece2.doorOrWindow);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.COLOR, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          if (piece1.color == piece2.color) {
-            return 0; 
-          } else if (piece1.color == null) {
-            return -1;
-          } else if (piece2.color == null) {
-            return 1; 
-          } else {
-            return piece1.color - piece2.color;
-          }
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        if (piece1.color == piece2.color) {
+          return 0;
+        } else if (piece1.color == null) {
+          return -1;
+        } else if (piece2.color == null) {
+          return 1;
+        } else {
+          return piece1.color - piece2.color;
         }
-      });
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.TEXTURE, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          if (piece1.texture == piece2.texture) {
-            return 0; 
-          } else if (piece1.texture == null) {
-            return -1;
-          } else if (piece2.texture == null) {
-            return 1; 
-          } else {
-            return collator.compare(piece1.texture.getName(), piece2.texture.getName());
-          }
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        if (piece1.texture == piece2.texture) {
+          return 0;
+        } else if (piece1.texture == null) {
+          return -1;
+        } else if (piece2.texture == null) {
+          return 1;
+        } else {
+          return collator.compare(piece1.texture.getName(), piece2.texture.getName());
         }
-      });
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.VISIBLE, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.visible, piece2.visible);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.visible, piece2.visible);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.X, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.x, piece2.x);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.x, piece2.x);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.Y, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.y, piece2.y);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.y, piece2.y);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.ELEVATION, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.elevation, piece2.elevation);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.elevation, piece2.elevation);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.ANGLE, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.angle, piece2.angle);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.angle, piece2.angle);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.LEVEL, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.getLevel(), piece2.getLevel());
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.getLevel(), piece2.getLevel());
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.PRICE, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.price, piece2.price);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.price, piece2.price);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.VALUE_ADDED_TAX_PERCENTAGE, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.valueAddedTaxPercentage, piece2.valueAddedTaxPercentage);
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.valueAddedTaxPercentage, piece2.valueAddedTaxPercentage);
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.VALUE_ADDED_TAX, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.getValueAddedTax(), piece2.getValueAddedTax());
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.getValueAddedTax(), piece2.getValueAddedTax());
+      }
+    });
     SORTABLE_PROPERTY_COMPARATORS.put(SortableProperty.PRICE_VALUE_ADDED_TAX_INCLUDED, new Comparator<HomePieceOfFurniture>() {
-        public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
-          return HomePieceOfFurniture.compare(piece1.getPriceValueAddedTaxIncluded(), piece2.getPriceValueAddedTaxIncluded());
-        }
-      });
+      public int compare(HomePieceOfFurniture piece1, HomePieceOfFurniture piece2) {
+        return HomePieceOfFurniture.compare(piece1.getPriceValueAddedTaxIncluded(), piece2.getPriceValueAddedTaxIncluded());
+      }
+    });
   }
-  
+
   private static int compare(float value1, float value2) {
     return Float.compare(value1, value2);
   }
-  
+
   private static int compare(boolean value1, boolean value2) {
-    return value1 == value2 
-               ? 0
-               : (value1 ? -1 : 1);
+    return value1 == value2
+            ? 0
+            : (value1 ? -1 : 1);
   }
-  
+
   private static int compare(BigDecimal value1, BigDecimal value2) {
     if (value1 == value2) {
       return 0;
     } else if (value1 == null) {
       return -1;
     } else if (value2 == null) {
-      return 1; 
+      return 1;
     } else {
       return value1.compareTo(value2);
     }
   }
-  
+
   private static int compare(Level level1, Level level2) {
     if (level1 == level2) {
       return 0;
     } else if (level1 == null) {
       return -1;
     } else if (level2 == null) {
-      return 1; 
+      return 1;
     } else {
       return Float.compare(level1.getElevation(), level2.getElevation());
     }
   }
-  
-  private String                 catalogId;
-  private String                 name;
-  private boolean                nameVisible;
-  private float                  nameXOffset;
-  private float                  nameYOffset;
-  private TextStyle              nameStyle;
-  private float                  nameAngle;
-  private String                 description;
-  private String                 information;
-  private Content                icon;
-  private Content                planIcon;
-  private Content                model;
-  private float                  width;
-  private float                  depth;
-  private float                  height;
-  private float                  elevation;
-  private float                  dropOnTopElevation;
-  private boolean                movable;
-  private boolean                doorOrWindow;
-  private HomeMaterial []        modelMaterials;
-  private Integer                color;
-  private HomeTexture            texture;
-  private Float                  shininess;
-  private float [][]             modelRotation;
-  private String                 staircaseCutOutShape;
-  private String                 creator;
-  private boolean                backFaceShown;
-  private boolean                resizable;
-  private boolean                deformable;
-  private boolean                texturable;
-  private BigDecimal             price;
-  private BigDecimal             valueAddedTaxPercentage;
-  private String                 currency;
-  private boolean                visible;
-  private float                  x;
-  private float                  y;
-  private float                  angle;
-  private boolean                modelMirrored;
-  private Level                  level;
-  
+
+  private String catalogId;
+  private String name;
+  private boolean nameVisible;
+  private float nameXOffset;
+  private float nameYOffset;
+  private TextStyle nameStyle;
+  private float nameAngle;
+  private String description;
+  private String information;
+  private Content icon;
+  private Content planIcon;
+  private Content model;
+  private float width;
+  private float depth;
+  private float height;
+  private float elevation;
+  private float dropOnTopElevation;
+  private boolean movable;
+  private boolean doorOrWindow;
+  private HomeMaterial[] modelMaterials;
+  private Integer color;
+  private HomeTexture texture;
+  private Float shininess;
+  private float[][] modelRotation;
+  private String staircaseCutOutShape;
+  private String creator;
+  private boolean backFaceShown;
+  private boolean resizable;
+  private boolean deformable;
+  private boolean texturable;
+  private BigDecimal price;
+  private BigDecimal valueAddedTaxPercentage;
+  private String currency;
+  private boolean visible;
+  private float x;
+  private float y;
+  private float angle;
+  private boolean modelMirrored;
+  private Level level;
+
   private transient PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
   private transient Shape shapeCache;
 
   /**
    * Creates a home piece of furniture from an existing piece.
+   *
    * @param piece the piece from which data are copied
    */
   public HomePieceOfFurniture(PieceOfFurniture piece) {
@@ -302,8 +316,8 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
     this.valueAddedTaxPercentage = piece.getValueAddedTaxPercentage();
     this.currency = piece.getCurrency();
     if (piece instanceof HomePieceOfFurniture) {
-      HomePieceOfFurniture homePiece = 
-          (HomePieceOfFurniture)piece;
+      HomePieceOfFurniture homePiece =
+              (HomePieceOfFurniture) piece;
       this.catalogId = homePiece.getCatalogId();
       this.nameVisible = homePiece.isNameVisible();
       this.nameXOffset = homePiece.getNameXOffset();
@@ -320,8 +334,8 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
       this.modelMaterials = homePiece.getModelMaterials();
     } else {
       if (piece instanceof CatalogPieceOfFurniture) {
-        this.catalogId = ((CatalogPieceOfFurniture)piece).getId();
-      }      
+        this.catalogId = ((CatalogPieceOfFurniture) piece).getId();
+      }
       this.visible = true;
       this.x = this.width / 2;
       this.y = this.depth / 2;
@@ -329,7 +343,7 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   }
 
   /**
-   * Initializes new piece fields to their default values 
+   * Initializes new piece fields to their default values
    * and reads piece from <code>in</code> stream with default reading method.
    */
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -340,9 +354,9 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
     this.texturable = true;
     this.propertyChangeSupport = new PropertyChangeSupport(this);
     in.defaultReadObject();
-    
+
     // Ensure angle is always positive and between 0 and 2 PI
-    this.angle = (float)((this.angle % TWICE_PI + TWICE_PI) % TWICE_PI);
+    this.angle = (float) ((this.angle % TWICE_PI + TWICE_PI) % TWICE_PI);
   }
 
   /**
@@ -365,7 +379,7 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   public String getCatalogId() {
     return this.catalogId;
   }
-  
+
   /**
    * Returns the name of this piece of furniture.
    */
@@ -374,27 +388,27 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   }
 
   /**
-   * Sets the name of this piece of furniture. Once this piece is updated, 
+   * Sets the name of this piece of furniture. Once this piece is updated,
    * listeners added to this piece will receive a change notification.
    */
   public void setName(String name) {
     if (name != this.name
-        && (name == null || !name.equals(this.name))) {
+            && (name == null || !name.equals(this.name))) {
       String oldName = this.name;
       this.name = name;
       this.propertyChangeSupport.firePropertyChange(Property.NAME.name(), oldName, name);
     }
   }
-   
+
   /**
-   * Returns whether the name of this piece should be drawn or not. 
+   * Returns whether the name of this piece should be drawn or not.
    */
   public boolean isNameVisible() {
-    return this.nameVisible;  
+    return this.nameVisible;
   }
-  
+
   /**
-   * Sets whether the name of this piece is visible or not. Once this piece of furniture 
+   * Sets whether the name of this piece is visible or not. Once this piece of furniture
    * is updated, listeners added to this piece will receive a change notification.
    */
   public void setNameVisible(boolean nameVisible) {
@@ -403,16 +417,16 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
       this.propertyChangeSupport.firePropertyChange(Property.NAME_VISIBLE.name(), !nameVisible, nameVisible);
     }
   }
-  
+
   /**
-   * Returns the distance along x axis applied to piece abscissa to display piece name. 
+   * Returns the distance along x axis applied to piece abscissa to display piece name.
    */
   public float getNameXOffset() {
-    return this.nameXOffset;  
+    return this.nameXOffset;
   }
-  
+
   /**
-   * Sets the distance along x axis applied to piece abscissa to display piece name. 
+   * Sets the distance along x axis applied to piece abscissa to display piece name.
    * Once this piece is updated, listeners added to this piece will receive a change notification.
    */
   public void setNameXOffset(float nameXOffset) {
@@ -422,17 +436,17 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
       this.propertyChangeSupport.firePropertyChange(Property.NAME_X_OFFSET.name(), oldNameXOffset, nameXOffset);
     }
   }
-  
+
   /**
-   * Returns the distance along y axis applied to piece ordinate 
+   * Returns the distance along y axis applied to piece ordinate
    * to display piece name.
    */
   public float getNameYOffset() {
-    return this.nameYOffset;  
+    return this.nameYOffset;
   }
 
   /**
-   * Sets the distance along y axis applied to piece ordinate to display piece name. 
+   * Sets the distance along y axis applied to piece ordinate to display piece name.
    * Once this piece is updated, listeners added to this piece will receive a change notification.
    */
   public void setNameYOffset(float nameYOffset) {
@@ -447,7 +461,7 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
    * Returns the text style used to display piece name.
    */
   public TextStyle getNameStyle() {
-    return this.nameStyle;  
+    return this.nameStyle;
   }
 
   /**
@@ -461,23 +475,25 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
       this.propertyChangeSupport.firePropertyChange(Property.NAME_STYLE.name(), oldNameStyle, nameStyle);
     }
   }
-  
+
   /**
    * Returns the angle in radians used to display the piece name.
-   * @since 3.6 
+   *
+   * @since 3.6
    */
   public float getNameAngle() {
     return this.nameAngle;
   }
 
   /**
-   * Sets the angle in radians used to display the piece name. Once this piece is updated, 
+   * Sets the angle in radians used to display the piece name. Once this piece is updated,
    * listeners added to this piece will receive a change notification.
-   * @since 3.6 
+   *
+   * @since 3.6
    */
   public void setNameAngle(float nameAngle) {
     // Ensure angle is always positive and between 0 and 2 PI
-    nameAngle = (float)((nameAngle % TWICE_PI + TWICE_PI) % TWICE_PI);
+    nameAngle = (float) ((nameAngle % TWICE_PI + TWICE_PI) % TWICE_PI);
     if (nameAngle != this.nameAngle) {
       float oldNameAngle = this.nameAngle;
       this.nameAngle = nameAngle;
@@ -494,26 +510,27 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   }
 
   /**
-   * Sets the description of this piece of furniture. Once this piece is updated, 
+   * Sets the description of this piece of furniture. Once this piece is updated,
    * listeners added to this piece will receive a change notification.
    */
   public void setDescription(String description) {
     if (description != this.description
-        && (description == null || !description.equals(this.description))) {
+            && (description == null || !description.equals(this.description))) {
       String oldDescription = this.description;
       this.description = description;
       this.propertyChangeSupport.firePropertyChange(Property.DESCRIPTION.name(), oldDescription, description);
     }
   }
-   
+
   /**
    * Returns the additional information associated to this piece, or <code>null</code>.
+   *
    * @since 4.2
    */
   public String getInformation() {
     return this.information;
   }
-  
+
   /**
    * Returns the depth of this piece of furniture.
    */
@@ -522,8 +539,9 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   }
 
   /**
-   * Sets the depth of this piece of furniture. Once this piece is updated, 
+   * Sets the depth of this piece of furniture. Once this piece is updated,
    * listeners added to this piece will receive a change notification.
+   *
    * @throws IllegalStateException if this piece of furniture isn't resizable
    */
   public void setDepth(float depth) {
@@ -547,8 +565,9 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
   }
 
   /**
-   * Sets the height of this piece of furniture. Once this piece is updated, 
+   * Sets the height of this piece of furniture. Once this piece is updated,
    * listeners added to this piece will receive a change notification.
+   *
    * @throws IllegalStateException if this piece of furniture isn't resizable
    */
   public void setHeight(float height) {
@@ -561,6 +580,13 @@ public class HomePieceOfFurniture extends HomeObject implements PieceOfFurniture
     } else {
       throw new IllegalStateException("Piece isn't resizable");
     }
+  }
+
+  /**
+   * Returns the volume of this piece of furniture.
+   */
+  public float getVolume() {
+    return this.getWidth() * getHeight() * getDepth();
   }
 
   /**
